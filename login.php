@@ -33,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $locked = true;
         $error  = 'RATE_LIMIT';
     } else {
-        $username = trim($_POST['username'] ?? '');
-        $password = trim($_POST['password'] ?? '');
+        $username = trim($_POST['opr_id'] ?? '');
+        $password = trim($_POST['access_token'] ?? '');
 
         // Log attempt
         $pdo->prepare("INSERT INTO login_attempts (ip) VALUES (?)")->execute([$ip]);
@@ -66,7 +66,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    cursor: none !important; /* Force hides the OS pointer on everything */
+    user-select: none;         /* Standard */
+    -webkit-user-select: none; /* Safari/Chrome */
+    -moz-user-select: none;    /* Firefox */
+  }
+
+  .term-input {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
 
   :root {
     --green: #00ff41;
@@ -395,8 +408,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label class="field-label" for="username">OPERATOR ID</label>
         <div class="field-wrap">
           <span class="field-prompt">&gt;</span>
-          <input class="term-input" type="text" id="username" name="username"
-                 placeholder="enter username" spellcheck="false" autocomplete="off">
+          <input class="term-input" type="text" id="username" name="opr_id"
+       		placeholder="enter username" spellcheck="false" autocomplete="off">
         </div>
       </div>
 
@@ -404,8 +417,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label class="field-label" for="password">ACCESS KEY</label>
         <div class="field-wrap">
           <span class="field-prompt">&gt;</span>
-          <input class="term-input" type="password" id="password" name="password"
-                 placeholder="enter key" autocomplete="off">
+          <input class="term-input" type="password" id="password" name="access_token"
+       		placeholder="enter key" autocomplete="off">
         </div>
       </div>
 
