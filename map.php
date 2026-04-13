@@ -319,27 +319,28 @@ async function doLogout() {
 
 // ── MAP INIT ───────────────────────────────────────────────────────────
 function initMap() {
-  // 1. Define the world boundaries (South-West to North-East)
-  const corner1 = L.latLng(-90, -180);
-  const corner2 = L.latLng(90, 180);
-  const bounds = L.latLngBounds(corner1, corner2);
+// 1. Define strict world boundaries
+  const southWest = L.latLng(-89.9, -179.9);
+  const northEast = L.latLng(89.9, 180);
+  const bounds = L.latLngBounds(southWest, northEast);
 
   map = L.map('map', { 
-	center: [20, 10], 
-	zoom: 2, 
-	zoomControl: true,
-	// --- FIX: LIMIT THE VIEW ---
-    	maxBounds: bounds,         // Don't let user scroll outside these coords
-    	maxBoundsViscosity: 1.0,   // "Hard" bounce-back at the edges
-    worldCopyJump: false       // Stop the "multiple worlds" effect
+    center: [20, 10], 
+    zoom: 3,
+    minZoom: 2,                // Prevents zooming out to see "the void"
+    zoomControl: true,
+    maxBounds: bounds,         // Locks the viewport to one world
+    maxBoundsViscosity: 1.0,   // Makes the edges feel like a solid wall
+    worldCopyJump: false       // Disables jumping between "worlds"
   });
 
-  // 2. Add a Premium Dark Theme (CartoDB Dark Matter)
+  // 2. Add the Dark Theme with NO-WRAP enabled
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    attribution: '&copy; CARTO',
     subdomains: 'abcd',
     maxZoom: 20,
-    // --- PERFORMANCE FIXES ---
+    noWrap: true,              // THIS IS THE KEY: Stops tiles from repeating
+    bounds: bounds,            // Limits tile requests to the defined world
     updateWhenIdle: true,
     keepBuffer: 2
   }).addTo(map);
