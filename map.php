@@ -319,11 +319,29 @@ async function doLogout() {
 
 // ── MAP INIT ───────────────────────────────────────────────────────────
 function initMap() {
-  map = L.map('map', { center: [20, 10], zoom: 2, zoomControl: true, worldCopyJump: false });
+  // 1. Define the world boundaries (South-West to North-East)
+  const corner1 = L.latLng(-90, -180);
+  const corner2 = L.latLng(90, 180);
+  const bounds = L.latLngBounds(corner1, corner2);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap'
+  map = L.map('map', { 
+	center: [20, 10], 
+	zoom: 2, 
+	zoomControl: true,
+	// --- FIX: LIMIT THE VIEW ---
+    	maxBounds: bounds,         // Don't let user scroll outside these coords
+    	maxBoundsViscosity: 1.0,   // "Hard" bounce-back at the edges
+    worldCopyJump: false       // Stop the "multiple worlds" effect
+  });
+
+  // 2. Add a Premium Dark Theme (CartoDB Dark Matter)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20,
+    // --- PERFORMANCE FIXES ---
+    updateWhenIdle: true,
+    keepBuffer: 2
   }).addTo(map);
 
   map.on('click', e => {
