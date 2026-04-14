@@ -368,6 +368,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 </head>
 <body>
+<input type="text" style="display:none">
+<input type="password" style="display:none">
 
 <canvas id="noise"></canvas>
 <div class="scanline"></div>
