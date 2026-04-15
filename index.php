@@ -203,6 +203,7 @@ $operator = htmlspecialchars($_SESSION['user']);
     <div class="nav-links">
       <a href="index.php" class="nav-link active">Journal</a>
       <a href="map.php" class="nav-link">Intel Map</a>
+      <a href="writeups.php" class="nav-link">Writeups</a>
       <span class="operator-tag">OPR: <span><?= $operator ?></span></span>
       <button class="logout-btn" onclick="doLogout()">Terminate</button>
     </div>
