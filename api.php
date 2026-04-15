@@ -13,6 +13,13 @@
 
 require_once 'db.php';
 session_start();
+
+// ── LOGOUT (destroys session for both normal and view-only) ──
+if ($route === 'logout' && $method === 'POST') {
+    session_destroy();
+    json_out(['success' => true]);
+}
+
 init_db();
 
 header('Content-Type: application/json');

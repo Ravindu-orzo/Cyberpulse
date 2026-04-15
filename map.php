@@ -174,7 +174,7 @@ header{padding:12px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;
       <a href="map.php"      class="nav-link active">Intel Map</a>
       <a href="writeups.php" class="nav-link">Writeups</a>
       <span class="operator-tag" style="color:#eab308">👁 VIEW ONLY</span>
-      <button class="logout-btn" onclick="window.location='login.php'">Exit</button>
+      <button class="logout-btn" onclick="exitViewMode()">Exit</button>
       <?php endif; ?>
     </div>
   </header>
@@ -280,7 +280,7 @@ header{padding:12px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;
   </div>
   <div class="modal-actions">
     <button class="modal-cancel" onclick="closeNewEventModal()">Cancel</button>
-    <button class="modal-save" onclick="createEvent()">Create Event</button>
+    <button class="modal-save" onclick="createNewEvent()">Create Event</button>
   </div>
 </div>
 <?php endif; ?>
@@ -293,6 +293,11 @@ const IS_VIEW_ONLY = <?= $isViewOnly ? 'true' : 'false' ?>;
 let map, allPins=[], markers=[], pendingLatLng=null;
 let eventGroups=[], activeGroupId=null;
 let playInterval=null, playIndex=0, playPins=[];
+
+async function exitViewMode() {
+    await fetch('api.php?r=logout', { method: 'POST' });
+    window.location = 'login.php';
+}
 
 function toast(msg,err=false){const el=document.getElementById('toast');el.textContent=msg;el.className='show'+(err?' err':'');setTimeout(()=>el.className='',2800);}
 function todayStr(){return new Date().toISOString().split('T')[0];}
@@ -378,13 +383,17 @@ async function loadGroups() {
 }
 
 async function loadPins(groupId) {
-  try {
-    const r = await fetch('api.php?r=events&group='+groupId);
-    if(r.status===401){window.location='login.php';return;}
-    allPins = await r.json();
-    renderMarkers();
-    renderPinTimeline();
-  } catch(e){toast('Could not load pins.',true);}
+    try {
+        const r = await fetch('api.php?r=events&group=' + groupId);
+        if (r.status === 401) { window.location = 'login.php'; return; }
+        const data = await r.json();
+        allPins = Array.isArray(data) ? data : [];
+        renderMarkers();
+        renderPinTimeline();
+    } catch(e) { 
+        toast('Could not load pins.', true);
+        allPins = [];
+    }
 }
 
 // RENDER EVENT LIST
@@ -511,23 +520,27 @@ function stopPlay(){
 function openNewEventModal(){if(IS_VIEW_ONLY)return;document.getElementById('new-event-modal').classList.add('open');document.getElementById('new-event-name').focus();}
 function closeNewEventModal(){document.getElementById('new-event-modal').classList.remove('open');}
 
-async function createEvent(){
-  const name=document.getElementById('new-event-name').value.trim();
-  const tag=document.getElementById('new-event-tag').value;
-  const desc=document.getElementById('new-event-desc').value.trim();
-  if(!name){toast('Event name required.',true);return;}
-  try{
-    const r=await fetch('api.php?r=event_groups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,tag,description:desc})});
-    if(r.status===401){window.location='login.php';return;}
-    const g=await r.json();
-    eventGroups.unshift(g);
-    renderEventList();
-    closeNewEventModal();
-    selectEvent(g.id);
-    document.getElementById('new-event-name').value='';
-    document.getElementById('new-event-desc').value='';
-    toast('Event created.');
-  }catch(e){toast('Failed.',true);}
+async function createNewEvent() {
+    const name = document.getElementById('new-event-name').value.trim();
+    const tag = document.getElementById('new-event-tag').value;
+    const desc = document.getElementById('new-event-desc').value.trim();
+    if (!name) { toast('Event name required.', true); return; }
+    try {
+        const r = await fetch('api.php?r=event_groups', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, tag, description: desc })
+        });
+        if (r.status === 401) { window.location = 'login.php'; return; }
+        const g = await r.json();
+        eventGroups.unshift(g);
+        renderEventList();
+        closeNewEventModal();
+        selectEvent(g.id);  // this loads pins and opens timeline
+        document.getElementById('new-event-name').value = '';
+        document.getElementById('new-event-desc').value = '';
+        toast('Event created.');
+    } catch(e) { toast('Failed.', true); }
 }
 
 async function deleteGroup(id){

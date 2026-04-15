@@ -435,7 +435,10 @@ function toast(msg, err=false) {
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtDate(s) { return new Date(s).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
 async function doLogout() { await fetch('api.php?r=logout',{method:'POST'}); window.location='login.php'; }
-function exitViewMode() { window.location='login.php'; }
+async function exitViewMode() {
+    await fetch('api.php?r=logout', { method: 'POST' });
+    window.location = 'login.php';
+}
 
 // ── CATEGORY VIEW ──────────────────────────────────────────────────────
 async function loadCounts() {
